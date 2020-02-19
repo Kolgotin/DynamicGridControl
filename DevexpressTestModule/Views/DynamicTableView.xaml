@@ -1,0 +1,167 @@
+﻿<UserControl x:Class="DevexpressTestModule.Views.DynamicTableView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
+             xmlns:dxb="http://schemas.devexpress.com/winfx/2008/xaml/bars"
+             xmlns:dxg="http://schemas.devexpress.com/winfx/2008/xaml/grid"
+             xmlns:dxprg="http://schemas.devexpress.com/winfx/2008/xaml/propertygrid" 
+             xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
+             xmlns:dxgt="http://schemas.devexpress.com/winfx/2008/xaml/grid/themekeys"
+             xmlns:dxght="clr-namespace:DevExpress.Xpf.Grid.HitTest;assembly=DevExpress.Xpf.Grid.v19.1"
+             xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm"
+             xmlns:Views="clr-namespace:DevexpressTestModule.Views"
+             xmlns:ViewModels="clr-namespace:DevexpressTestModule.ViewModels"
+             xmlns:Models="clr-namespace:DevexpressTestModule.Models"
+             xmlns:lc="clr-namespace:DevexpressTestModule.LibraryClasses"
+             mc:Ignorable="d"
+             DataContext="{dxmvvm:ViewModelSource Type=ViewModels:DynamicTableViewModel}"
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid Name="MainGrid">
+        <Grid.Resources>
+            <dx:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
+            <Views:NegativeConverter x:Key="negConverter" />
+            <Views:MyTemplateSelector x:Key="cellTS" />
+
+            <DataTemplate x:Key="{dxgt:TableViewThemeKey ResourceKey=HeadersTemplate}">
+                <dx:MeasurePixelSnapper>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid Panel.ZIndex="1">
+                            <dxg:IndicatorColumnHeader x:Name="PART_Indicator" ColumnPosition="Left" Width="{Binding Path=(dxg:GridControl.CurrentView).IndicatorHeaderWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                           Visibility="{Binding Path=(dxg:GridControl.CurrentView).ActualShowIndicator, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                           dxg:GridControl.CurrentView="{Binding Path=(dxg:GridControl.CurrentView), RelativeSource={RelativeSource TemplatedParent}}"
+                                               HasTopElement="{Binding Path=(dxg:GridControl.CurrentView).DataControl.BandsLayout.ShowBandsPanel, RelativeSource={RelativeSource TemplatedParent}}">
+                                <dxg:GridViewHitInfoBase.HitTestAcceptor>
+                                    <dxght:ColumnButtonTableViewHitTestAcceptor />
+                                </dxg:GridViewHitInfoBase.HitTestAcceptor>
+                            </dxg:IndicatorColumnHeader>
+                            <ContentControl Template="{DynamicResource {dxgt:GridColumnHeaderThemeKey ResourceKey=IndicatorColumnHeaderTemplate}}" dxg:GridControl.CurrentView="{Binding Path=(dxg:GridControl.CurrentView), RelativeSource={RelativeSource TemplatedParent}}"
+                                    Visibility="{Binding Path=(dxg:GridControl.CurrentView).ActualShowIndicator, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        </Grid>
+                        <dxg:ColumnHeaderPanel ClipToBounds="True" Grid.Column="1" dxg:GridControl.CurrentView="{Binding Path=(dxg:GridControl.CurrentView), RelativeSource={RelativeSource TemplatedParent}}" />
+                    </Grid>
+                </dx:MeasurePixelSnapper>
+            </DataTemplate>
+            <Style TargetType="{x:Type dxg:GridScrollablePart}">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type dxg:GridScrollablePart}">
+                            <dx:DXDockPanel x:Name="PART_ScrollablePartPanel" LastChildFill="True">
+                                <ContentPresenter Name="PART_FixedLeftContent" dxg:TableViewProperties.FixedAreaStyle="Left" dx:DXDockPanel.Dock="Left" />
+                                <ContentPresenter x:Name="PART_FixedLeftLinePlaceHolder" dx:DXDockPanel.Dock="Left" Visibility="Collapsed">
+                                    <dxg:GridViewHitInfoBase.HitTestAcceptor>
+                                        <dxght:FixedLeftDivTableViewHitTestAcceptor />
+                                    </dxg:GridViewHitInfoBase.HitTestAcceptor>
+                                </ContentPresenter>
+                                <Border Name="PART_FixedNoneCellsBorder" Clip="M 0,0 H 50000 V 50000 H 0" dx:DXDockPanel.Dock="Left">
+                                    <dxg:FocusRectPresenter.IsHorizontalScrollHost>
+                                        True
+                                    </dxg:FocusRectPresenter.IsHorizontalScrollHost>
+                                    <ContentPresenter Name="PART_FixedNoneContent" />
+                                </Border>
+                                <ContentPresenter x:Name="PART_FixedRightLinePlaceHolder" dx:DXDockPanel.Dock="Left" Visibility="Collapsed">
+                                    <dxg:GridViewHitInfoBase.HitTestAcceptor>
+                                        <dxght:FixedRightDivTableViewHitTestAcceptor />
+                                    </dxg:GridViewHitInfoBase.HitTestAcceptor>
+                                </ContentPresenter>
+                                <ContentPresenter Name="PART_FixedRightContent" dxg:TableViewProperties.FixedAreaStyle="Left" dx:DXDockPanel.Dock="Left" />
+                                <dxg:FitContentContainer>
+                                    <ContentPresenter Name="PART_FitContent" />
+                                </dxg:FitContentContainer>
+                            </dx:DXDockPanel>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <DataTemplate x:Key="CellDataTemplate">
+                <StackPanel>
+                    <Border Name="editorBorder" 
+                            dxg:FadeSelectionHelper.IsKeyboardFocusWithinView="{Binding Path=View.IsKeyboardFocusWithinView}" 
+                            dxg:FadeSelectionHelper.FadeSelectionOnLostFocus="{Binding Path=View.ActualFadeSelectionOnLostFocus}">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=RowData.SelectionState}" Value="Focused">
+                                        <Setter Property="TextBlock.Foreground" Value="{DynamicResource {dxgt:GridRowThemeKey ResourceKey=TextFocusedBrush}}" />
+                                        <Setter Property="Background" Value="{DynamicResource {dxgt:GridRowThemeKey ResourceKey=BorderFocusedBrush}}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Path=RowData.SelectionState}" Value="None">
+                                        <Setter Property="TextBlock.Foreground" Value="Black" />
+                                        <Setter Property="Background" Value="White" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Path=IsFocusedCell}" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource {dxgt:GridRowThemeKey ResourceKey=CellBorderFocusedBrush}}" />
+                                        <Setter Property="TextBlock.Foreground" Value="{DynamicResource {dxgt:GridRowThemeKey ResourceKey=CellTextFocusedBrush}}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                    </Border>
+                    <dxg:CellEditor Content="{Binding Value.StrValue}"/>
+                    <!--<CheckBox IsChecked="{Binding Value.IsBorerNull}"/>
+                    <TextBox Text="{Binding Value.StrValue}" Margin="5,0"/>-->
+                </StackPanel>
+            </DataTemplate>
+
+            <!--<Style TargetType="{x:Type dxg:GridColumn}">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding FieldType, RelativeSource={RelativeSource Self}}" Value="{x:Type Models:DynamicTableModel}">
+                        <Setter Property="CellTemplate">
+                            <Setter.Value>
+                                <DataTemplate>
+                                    <Grid Background="{Binding Value.CellBackgroundBrush}">
+                                        <dxg:CellEditor Content="{Binding Value.StrValue}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>-->
+        </Grid.Resources>
+        <dxg:GridControl Name="DynamicGridControl"
+                         ItemsSource="{Binding CommonEditCollection, Mode=TwoWay}"
+                         SelectionMode="Cell"
+                         AutoGenerateColumns="AddNew"
+                         AutoGeneratedColumns="GridControl_AutoGeneratedColumns">
+            
+            <dxg:GridControl.View>
+                <dxg:TableView>
+                    <dxg:TableView.RowCellMenuCustomizations>
+                        <dxb:BarButtonItem Content="Открыть окно параметров" Glyph="{dx:DXImage Image=New_16x16.png}"
+                                    Command="{Binding (dxb:GridPopupMenuBase.GridMenuInfo).View.DataContext.OpenEditParameterChildElem, RelativeSource={RelativeSource Self}}"
+                                    CommandParameter="{Binding (dxb:GridPopupMenuBase.GridMenuInfo).View.DataContext.SelectedCommonEditCollection, RelativeSource={RelativeSource Self}}"/>
+                        <dxb:BarButtonItem Content="Удалить строку" Glyph="{dx:DXImage Image=Delete_16x16.png}"
+                                                       Command="{Binding (dxb:GridPopupMenuBase.GridMenuInfo).View.DataContext.DeleteNewRowCommonEdit, RelativeSource={RelativeSource Self}}" />
+                        <!--<dxb:BarButtonItem Content="Отменить редактирование ячейки" Glyph="{dx:DXImage Image=Redo_16x16.png}" ItemClick="CancelCellChange_ItemClick"/>-->
+                        <dxb:BarSubItem Content="Добавление нового элемента">
+                            <dxb:BarButtonItem Content="Добавить элемент 'Картинка'" Glyph="{dx:DXImage Image=Add_16x16.png}"
+                                                           Command="{Binding (dxb:GridPopupMenuBase.GridMenuInfo).View.DataContext.AddNewRowCommonEditImage, RelativeSource={RelativeSource Self}}"/>
+                            <dxb:BarButtonItem Content="Добавить элемент 'Строка'" Glyph="{dx:DXImage Image=Add_16x16.png}"
+                                                           Command="{Binding (dxb:GridPopupMenuBase.GridMenuInfo).View.DataContext.AddNewRowCommonEditText, RelativeSource={RelativeSource Self}}"/>
+                            <dxb:BarButtonItem Content="Добавить элемент 'Таблица'" Glyph="{dx:DXImage Image=Add_16x16.png}"
+                                                           Command="{Binding (dxb:GridPopupMenuBase.GridMenuInfo).View.DataContext.AddNewRowCommonEditTable, RelativeSource={RelativeSource Self}}"/>
+                            <dxb:BarButtonItem Content="Добавить элемент 'Мат. Формула'" Glyph="{dx:DXImage Image=Add_16x16.png}"
+                                                           Command="{Binding (dxb:GridPopupMenuBase.GridMenuInfo).View.DataContext.AddNewRowCommonEditMathFormula, RelativeSource={RelativeSource Self}}"/>
+                        </dxb:BarSubItem>
+                    </dxg:TableView.RowCellMenuCustomizations>
+                    <!--<dxg:TableView.CellTemplate>
+                        <DataTemplate >
+                            <dxg:CellEditor Content="{Binding Value.StrValue}"/>
+                        </DataTemplate>
+                    </dxg:TableView.CellTemplate>-->
+                </dxg:TableView>
+            </dxg:GridControl.View>
+            <dxmvvm:Interaction.Behaviors>
+                <lc:CellSelectionBehavior SelectedCells="{Binding SelectedCells, Mode=TwoWay}"/>
+            </dxmvvm:Interaction.Behaviors>
+        </dxg:GridControl>
+    </Grid>
+</UserControl>
